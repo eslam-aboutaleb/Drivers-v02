@@ -56,7 +56,7 @@ typedef unsigned char				GPIO_PinState_t;
  *                      API Service Id Macros                                 *
  ******************************************************************************/
 /* Service ID for GPIO Init Channel */
-#define GPIO_INIT_CHANNEL_SID           (uint8)0x04
+#define GPIO_INIT_CHANNEL_SID           (uint8)0x05
 
 /* Service ID for GPIO read Channel */
 #define GPIO_READ_CHANNEL_SID           (uint8)0x00
@@ -69,6 +69,9 @@ typedef unsigned char				GPIO_PinState_t;
 
 /* Service ID for GPIO write Port */
 #define GPIO_WRITE_PORT_SID             (uint8)0x03
+
+/* Service ID for GPIO init Port */
+#define GPIO_INIT_PORT_SID              (uint8)0x04
 
 /* Service ID for GPIO Init Channel */
 #define GPIO_INIT_SID                   (uint8)0x10
