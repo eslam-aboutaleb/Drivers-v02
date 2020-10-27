@@ -8,6 +8,8 @@
 #ifndef LCD_INTERFACE_H_
 #define LCD_INTERFACE_H_
 
+typedef unsigned char							CGRAM_CharPos_t;
+
 /* ***************************************************************************** */
 						/* LCD configuration data types */
 /* ***************************************************************************** */
@@ -78,7 +80,7 @@ typedef struct
 
 /* ***************************************************************************** */
 /* Function		: 	LCD_vInit
- * Return  		: 	void
+ * Return  		: 	Error_Status		, Type	:	User defined type
  * Parameters	:	ConfigTypePtr		, Type	:	LCD_configType
  * Description	: 	- Function to initialize the LCD base on the configuration parameters
  *					- Options:
@@ -92,13 +94,82 @@ typedef struct
  *						- Display shift states
  */
 /* ***************************************************************************** */
-void LCD_vInit(LCD_configType * ConfigTypePtr);
+Error_Status LCD_xInit(LCD_configType * ConfigTypePtr);
+
 /* ***************************************************************************** */
-void LCD_vSendByte(uint8 Copy_u8Byte);
+/* Function		: 	LCD_vSendString
+ * Return  		: 	Error_Status		, Type	:	User defined type
+ * Parameters	:	Copy_u8Byte			, Type	:	uint8
+ * Description	: 	- Function to send byte to LCD
+ */
 /* ***************************************************************************** */
-void LCD_vSendString(uint8 *Copy_u8String);
+Error_Status LCD_xSendByte(uint8 Copy_u8Byte);
+
 /* ***************************************************************************** */
-Error_Status LCD_xGotoPosition(uint8 Copy_u8X_Position,uint8 Copy_u8Y_Position);
+/* Function		: 	LCD_vSendString
+ * Return  		: 	void
+ * Parameters	:	Copy_pu8String		, Type	:	pointer to uint8
+ * Description	: 	- Function to send string to LCD
+ */
+/* ***************************************************************************** */
+void LCD_vSendString(uint8 *Copy_pu8String);
+
+
+/* ***************************************************************************** */
+/* Function		: 	LCD_xGotoPosition
+ * Return  		: 	Error_Status		, Type	:	User defined type
+ * Parameters	:	Copy_u8Line_Position, Type	:	uint8
+ * 					Copy_u8Col_Position	, Type	:	uint8
+ * Description	: 	- Function to go to place based on line and column indexes on LCD
+ */
+/* ***************************************************************************** */
+Error_Status LCD_xGotoPosition(uint8 Copy_u8Line_Position, uint8 Copy_u8Col_Position);
+
+/* ***************************************************************************** */
+/* Function		: 	LCD_vSendInt
+ * Return  		: 	void
+ * Parameters	:	Copy_s32Num			, Type	:	sint32
+ * Description	: 	- Function to print integer on LCD
+ */
+/* ***************************************************************************** */
 void LCD_vSendInt(sint32 Copy_s32Num);
+
+/* ***************************************************************************** */
+/* Function		: 	LCD_vSendString
+ * Return  		: 	void
+ * Parameters	:	Copy_f32Num, Type			, Type	:	float32
+ * 					Copy_u8N_NumbersAfterFPonit	, Type	:	uint8
+ * Description	: 	- Function to print float on LCD
+ */
+/* ***************************************************************************** */
+void LCD_vSendFloat(float32 Copy_f32Num, uint8 Copy_u8N_NumbersAfterFPonit);
+
+/* ***************************************************************************** */
+/* Function		: 	LCD_vClear
+ * Return  		: 	void
+ * Parameters	:	Copy_u8Line_Position, Type	:	uint8
+ * Description	: 	- Function to go to clear the screen
+ */
+/* ***************************************************************************** */
+void LCD_vClear(void);
+
+/* ***************************************************************************** */
+/* Function		: 	LCD_vReturnHome
+ * Return  		: 	void
+ * Parameters	:	Copy_u8Line_Position, Type	:	uint8
+ * Description	: 	- Function to go to column zero and row zero on LCD
+ */
+/* ***************************************************************************** */
+void LCD_vReturnHome(void);
+
+/* ***************************************************************************** */
+/* Function		: 	LCD_vCustomChar
+ * Return  		: 	Error_Status		, Type	:	User defined type
+ * Parameters	:	Copy_pu8CharacteArr	, Type	:	Pointer to uint8
+ * 					Copy_xPosition		, Type	:	User defined type
+ * Description	: 	- Function to go to place based on line and column indexes on LCD
+ */
+/* ***************************************************************************** */
+Error_Status LCD_vCustomChar(uint8 *Copy_pu8CharacteArr,CGRAM_CharPos_t Copy_xPosition);
 
 #endif /*LCD_INTERFACE_H_*/
