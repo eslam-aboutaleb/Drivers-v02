@@ -39,7 +39,7 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 	{
 		/* Set current word length flag as 8 pins mode */
 		LCD_SET_CURRENT_WORD_LENGTH(LCD_8_pins);
-		Local_u8LCD_FlagIndex	=	7;
+		Local_u8LCD_FlagIndex	=	LCD_FLAG_PIN_8BITI_NDEX;
 
 		/* Initialize Data pins */
 		for(Local_u8Index = 0; Local_u8Index < LCD_8_pins;Local_u8Index++)
@@ -57,7 +57,7 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 		/* Set current word length flag as 4 pins mode */
 		LCD_SET_CURRENT_WORD_LENGTH(LCD_4_pins);
 
-		Local_u8LCD_FlagIndex	=	3;
+		Local_u8LCD_FlagIndex	=	LCD_FLAG_PIN_4BITI_NDEX;
 
 		/* Initialize Data pins */
 		for(Local_u8Index = 0; Local_u8Index < LCD_4_pins;Local_u8Index++)
