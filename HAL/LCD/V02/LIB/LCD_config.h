@@ -45,49 +45,4 @@
 #define LCD_N_COLS										16
 
 /* ***************************************************************************** */
-								/*Data pins*/
-/* ***************************************************************************** */
-#define LCD_FOUR_PINS								4
-#define LCD_EIGHT_PINS								8
-
-#define LCD_PINS_NUM								LCD_FOUR_PINS
-#define LCD_N_CNTRL_PINS							3
-
-#define LCD_DATA_PIN0_PORT							GPIOC
-#define LCD_DATA_PIN0   							GPIO_PIN_0
-
-#define LCD_DATA_PIN1_PORT							GPIOC
-#define LCD_DATA_PIN1   							GPIO_PIN_1
-
-#define LCD_DATA_PIN2_PORT							GPIOC
-#define LCD_DATA_PIN2   							GPIO_PIN_2
-
-#define LCD_DATA_PIN3_PORT							GPIOC
-#define LCD_DATA_PIN3   							GPIO_PIN_3
-
-#define LCD_DATA_PIN4_PORT							GPIOC
-#define LCD_DATA_PIN4   							GPIO_PIN_4
-
-#define LCD_DATA_PIN5_PORT							GPIOC
-#define LCD_DATA_PIN5   							GPIO_PIN_5
-
-#define LCD_DATA_PIN6_PORT							GPIOC
-#define LCD_DATA_PIN6   							GPIO_PIN_6
-
-#define LCD_DATA_PIN7_PORT							GPIOC
-#define LCD_DATA_PIN7   							GPIO_PIN_7
-
-/* ***************************************************************************** */
-							/*Control pins*/
-/* ***************************************************************************** */
-#define LCD_E_PIN_PORT      						GPIOD
-#define LCD_E_PIN        							GPIO_PIN_0
-
-#define LCD_RS_PIN_PORT     						GPIOD
-#define LCD_RS_PIN        							GPIO_PIN_2
-
-#define LCD_RW_PIN_PORT     						GPIOD
-#define LCD_RW_PIN        							GPIO_PIN_1
-
-/* ***************************************************************************** */
 #endif /*LCD_CONFIG_H_*/

@@ -15,6 +15,7 @@
 
 /* ***************************************************************************** */
 static uint8 u8LCD_WordLength;
+static uint8 Local_u8LCD_FlagIndex;
 /* ***************************************************************************** */
 #define LCD_SET_CURRENT_WORD_LENGTH(u8WordLength)			u8LCD_WordLength = u8WordLength
 #define LCD_U8GET_CURRENT_WORD_LENGTH()						u8LCD_WordLength
@@ -38,6 +39,7 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 	{
 		/* Set current word length flag as 8 pins mode */
 		LCD_SET_CURRENT_WORD_LENGTH(LCD_8_pins);
+		Local_u8LCD_FlagIndex	=	7;
 
 		/* Initialize Data pins */
 		for(Local_u8Index = 0; Local_u8Index < LCD_8_pins;Local_u8Index++)
@@ -54,6 +56,9 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 	{
 		/* Set current word length flag as 4 pins mode */
 		LCD_SET_CURRENT_WORD_LENGTH(LCD_4_pins);
+
+		Local_u8LCD_FlagIndex	=	3;
+
 		/* Initialize Data pins */
 		for(Local_u8Index = 0; Local_u8Index < LCD_4_pins;Local_u8Index++)
 		{
@@ -72,7 +77,7 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 
 	/* Initialization sequence */
 	/* Check if there is any operation is still running and wait until VDD rises */
-	LCD_CHECK_BUSY_FLAG();
+	LCD_CHECK_BUSY_FLAG(ConfigTypePtr,Local_u8LCD_FlagIndex);
 
 	/* Function set configurations */
 	LCD_xSendComand(ConfigTypePtr,
@@ -86,7 +91,7 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 	);
 
 	/* Check if there is any operation is still running */
-	LCD_CHECK_BUSY_FLAG();
+	LCD_CHECK_BUSY_FLAG(ConfigTypePtr,Local_u8LCD_FlagIndex);
 
 	/* Cursor and display control */
 	LCD_xSendComand(ConfigTypePtr,
@@ -100,13 +105,13 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 	);
 
 	/* Check if there is any operation is still running */
-	LCD_CHECK_BUSY_FLAG();
+	LCD_CHECK_BUSY_FLAG(ConfigTypePtr,Local_u8LCD_FlagIndex);
 
 	/* Clear the screen */
 	LCD_xSendComand(ConfigTypePtr,LCD_CLR);
 
 	/* Check if there is any operation is still running */
-	LCD_CHECK_BUSY_FLAG();
+	LCD_CHECK_BUSY_FLAG(ConfigTypePtr,Local_u8LCD_FlagIndex);
 	/* Entry mode */
 	LCD_xSendComand(ConfigTypePtr,
 			LCD_SET_ENTRY_MODE
@@ -117,36 +122,13 @@ Error_Status LCD_xInit(LCD_configType * ConfigTypePtr)
 	);
 
 	/* Clear LCD RW pin to return to write mode */
-	GPIO_vWritePortPin(LCD_RW_PIN_PORT,LCD_RW_PIN,GPIO_LOW);
+	GPIO_vWritePortPin(ConfigTypePtr->LCD_Map.LCD_CNTRL_PORT[LCD_RW_PIN_INDEX],ConfigTypePtr->LCD_Map.LCD_CNTRL_PIN[LCD_RW_PIN_INDEX],GPIO_LOW);
 
 	return E_OK;
 }
 
 /* ***************************************************************************** */
 
-static Error_Status LCD_xSendComand(LCD_configType *LCDx,uint8 Copy_u8Command)
-{
-	/* Turn LCD to send data mode */
-	GPIO_vWritePortPin(LCDx->LCD_Map.LCD_CNTRL_PORT[LCD_RW_PIN_INDEX],LCDx->LCD_Map.LCD_CNTRL_PIN[LCD_RW_PIN_INDEX],GPIO_LOW);
-	GPIO_vWritePortPin(LCDx->LCD_Map.LCD_CNTRL_PORT[LCD_RS_PIN_INDEX],LCDx->LCD_Map.LCD_CNTRL_PIN[LCD_RS_PIN_INDEX],GPIO_LOW);
-
-	/* Send data to LCD port */
-	if(LCD_8_pins == LCD_U8GET_CURRENT_WORD_LENGTH())
-	{
-		LCD_vLatch(LCDx,Copy_u8Command,LCD_SEND_COMMAND,LCD_8_pins);
-	}
-	else if(LCD_4_pins == LCD_U8GET_CURRENT_WORD_LENGTH())
-	{
-		LCD_vLatch(LCDx,Copy_u8Command,LCD_SEND_COMMAND,LCD_4_pins);
-	}
-	else
-	{
-		return E_NOK;
-	}
-	return E_OK;
-}
-
-/* ***************************************************************************** */
 Error_Status LCD_xSendByte(LCD_configType *LCDx, uint8 Copy_u8Byte)
 {
 	/* Turn LCD to send data mode */
@@ -168,84 +150,92 @@ Error_Status LCD_xSendByte(LCD_configType *LCDx, uint8 Copy_u8Byte)
 
 	return E_OK;
 }
+
 /* ***************************************************************************** */
-Error_Status LCD_xRecvByte(uint8 Copy_u8Byte, uint8* pu8RecvData)
+
+void LCD_vSendString(LCD_configType *LCDx,uint8 *Copy_u8String)
 {
-	uint8 Local_u8Data	=	0;
-	uint8 Local_u8DataArr[8];
-	uint8 Local_u8Index	=	0;
-	/* Turn LCD to read data mode */
-	GPIO_vWritePortPin(LCD_RS_PIN_PORT,LCD_RS_PIN,GPIO_HIGH);
-	GPIO_vWritePortPin(LCD_RW_PIN_PORT,LCD_RW_PIN,GPIO_HIGH);
-	/* Check what is the current word length */
-	if(LCD_8_pins == LCD_U8GET_CURRENT_WORD_LENGTH())
+	while (*Copy_u8String != '\0')
 	{
-		Local_u8DataArr[0] = GPIO_xReadPortPin(LCD_DATA_PIN0_PORT,LCD_DATA_PIN0);
-		Local_u8DataArr[1] = GPIO_xReadPortPin(LCD_DATA_PIN1_PORT,LCD_DATA_PIN1);
-		Local_u8DataArr[2] = GPIO_xReadPortPin(LCD_DATA_PIN2_PORT,LCD_DATA_PIN2);
-		Local_u8DataArr[3] = GPIO_xReadPortPin(LCD_DATA_PIN3_PORT,LCD_DATA_PIN3);
-		Local_u8DataArr[4] = GPIO_xReadPortPin(LCD_DATA_PIN4_PORT,LCD_DATA_PIN4);
-		Local_u8DataArr[5] = GPIO_xReadPortPin(LCD_DATA_PIN5_PORT,LCD_DATA_PIN5);
-		Local_u8DataArr[6] = GPIO_xReadPortPin(LCD_DATA_PIN6_PORT,LCD_DATA_PIN6);
-		Local_u8DataArr[7] = GPIO_xReadPortPin(LCD_DATA_PIN7_PORT,LCD_DATA_PIN7);
-		for(Local_u8Index = 0;Local_u8Index < CHARSIZE;Local_u8Index++)
-		{
-			if(Local_u8DataArr[Local_u8Index] == 0)
-			{
-				CLEAR_BIT(Local_u8Data,Local_u8Index);
-			}
-			else if (Local_u8DataArr[Local_u8Index] == 1)
-			{
-				SET_BIT(Local_u8Data,Local_u8Index);
-			}
-			else
-			{
-				/* No Action */
-			}
-		}
+		LCD_xSendByte(LCDx,*Copy_u8String);
+		Copy_u8String++;
 	}
-	else if(LCD_4_pins == LCD_U8GET_CURRENT_WORD_LENGTH())
+}
+
+/* ***************************************************************************** */
+
+Error_Status LCD_xGotoPosition(LCD_configType *LCDx,uint8 Copy_u8Line_Position, uint8 Copy_u8Col_Position)
+{
+	if(LCD_IS_FIRST_LINE(Copy_u8Line_Position) == E_OK)
 	{
-		/* Receive the upper nibble */
-		Local_u8DataArr[0] = GPIO_xReadPortPin(LCD_DATA_PIN0_PORT,LCD_DATA_PIN4);
-		Local_u8DataArr[1] = GPIO_xReadPortPin(LCD_DATA_PIN1_PORT,LCD_DATA_PIN5);
-		Local_u8DataArr[2] = GPIO_xReadPortPin(LCD_DATA_PIN2_PORT,LCD_DATA_PIN6);
-		Local_u8DataArr[3] = GPIO_xReadPortPin(LCD_DATA_PIN3_PORT,LCD_DATA_PIN7);
-
-		/* Wait until LCD does the operations */
-		LCD_CHECK_BUSY_FLAG();
-
-		/* Receive the lower nibble */
-		Local_u8DataArr[4] = GPIO_xReadPortPin(LCD_DATA_PIN4_PORT,LCD_DATA_PIN4);
-		Local_u8DataArr[5] = GPIO_xReadPortPin(LCD_DATA_PIN5_PORT,LCD_DATA_PIN5);
-		Local_u8DataArr[6] = GPIO_xReadPortPin(LCD_DATA_PIN6_PORT,LCD_DATA_PIN6);
-		Local_u8DataArr[7] = GPIO_xReadPortPin(LCD_DATA_PIN7_PORT,LCD_DATA_PIN7);
-		for(Local_u8Index = 0;Local_u8Index < CHARSIZE;Local_u8Index++)
-		{
-			if(Local_u8DataArr[Local_u8Index] == 0)
-			{
-				CLEAR_BIT(Local_u8Data,Local_u8Index);
-			}
-			else if (Local_u8DataArr[Local_u8Index] == 1)
-			{
-				SET_BIT(Local_u8Data,Local_u8Index);
-			}
-			else
-			{
-				/* No Action */
-			}
-		}
+		LCD_xSendComand(LCDx,(LCD_SET_DDRAM_ADDRESS | LCD_FIRST_LINE) + Copy_u8Col_Position);
+	}
+	else if(LCD_IS_SECOND_LINE(Copy_u8Line_Position) == E_OK)
+	{
+		LCD_xSendComand(LCDx,(LCD_SET_DDRAM_ADDRESS | LCD_SECOND_LINE) + Copy_u8Col_Position);
 	}
 	else
 	{
 		return E_NOK;
 	}
 
-	*pu8RecvData = Local_u8Data;
 	return E_OK;
-
 }
+
 /* ***************************************************************************** */
+
+void LCD_vSendInt(LCD_configType *LCDx,sint32 Copy_s32Num)
+{
+	uint8 Local_u8NumBufferp[LCD_N_COLS] = {0};
+	Util_String_vNumtoStr(Copy_s32Num,Local_u8NumBufferp);
+	LCD_vSendString(LCDx,Local_u8NumBufferp);
+}
+
+/* ***************************************************************************** */
+
+void LCD_vSendFloat(LCD_configType *LCDx,float32 Copy_f32Num, uint8 Copy_u8N_NumbersAfterFPonit)
+{
+	uint8 Local_u8NumBufferp[LCD_N_COLS] = {0};
+	Util_String_vFloatToStr(Copy_f32Num,Local_u8NumBufferp,Copy_u8N_NumbersAfterFPonit);
+	LCD_vSendString(LCDx,Local_u8NumBufferp);
+}
+
+/* ***************************************************************************** */
+
+void LCD_vClear(LCD_configType *LCDx)
+{
+	LCD_xSendComand(LCDx,LCD_CLR);
+}
+
+/* ***************************************************************************** */
+
+void LCD_vReturnHome(LCD_configType *LCDx)
+{
+	LCD_xSendComand(LCDx,LCD_CURSOR_HOME);
+}
+
+/* ***************************************************************************** */
+
+Error_Status LCD_vCustomChar(LCD_configType *LCDx,uint8 *Copy_pu8CharacteArr,CGRAM_CharPos_t Copy_xPosition)
+{
+	if(LCD_IS_VALID_CGRAM_POS(Copy_xPosition) == E_NOK)
+	{
+		return E_NOK;
+	}
+
+	uint8 Local_u8Index = 0;
+	LCD_xSendComand(LCDx,LCD_SET_CGRAM_ADDRESS +(Copy_xPosition * 8));
+
+	for(Local_u8Index = 0;Local_u8Index < LCD_CGRAM_PATTERN_BUFF_COUNT;Local_u8Index++)
+	{
+		LCD_xSendByte(LCDx,Copy_pu8CharacteArr[Local_u8Index]);
+	}
+
+	return E_OK;
+}
+
+/* ***************************************************************************** */
+
 static Error_Status LCD_vLatch(LCD_configType *LCDx,uint8 Copy_u8Data,uint8 Copy_u8DataType,uint8 Copy_u8Mode )
 {
 	uint8 Local_u8Index = 0;
@@ -337,6 +327,30 @@ static Error_Status LCD_vLatch(LCD_configType *LCDx,uint8 Copy_u8Data,uint8 Copy
 
 /* ***************************************************************************** */
 
+static Error_Status LCD_xSendComand(LCD_configType *LCDx,uint8 Copy_u8Command)
+{
+	/* Turn LCD to send data mode */
+	GPIO_vWritePortPin(LCDx->LCD_Map.LCD_CNTRL_PORT[LCD_RW_PIN_INDEX],LCDx->LCD_Map.LCD_CNTRL_PIN[LCD_RW_PIN_INDEX],GPIO_LOW);
+	GPIO_vWritePortPin(LCDx->LCD_Map.LCD_CNTRL_PORT[LCD_RS_PIN_INDEX],LCDx->LCD_Map.LCD_CNTRL_PIN[LCD_RS_PIN_INDEX],GPIO_LOW);
+
+	/* Send data to LCD port */
+	if(LCD_8_pins == LCD_U8GET_CURRENT_WORD_LENGTH())
+	{
+		LCD_vLatch(LCDx,Copy_u8Command,LCD_SEND_COMMAND,LCD_8_pins);
+	}
+	else if(LCD_4_pins == LCD_U8GET_CURRENT_WORD_LENGTH())
+	{
+		LCD_vLatch(LCDx,Copy_u8Command,LCD_SEND_COMMAND,LCD_4_pins);
+	}
+	else
+	{
+		return E_NOK;
+	}
+	return E_OK;
+}
+
+/* ***************************************************************************** */
+
 static void LCD_vSendPulse(LCD_configType *LCDx)
 {
 	GPIO_vWritePortPin(LCDx->LCD_Map.LCD_CNTRL_PORT[LCD_E_PIN_INDEX],LCDx->LCD_Map.LCD_CNTRL_PIN[LCD_E_PIN_INDEX],GPIO_HIGH);
@@ -347,79 +361,7 @@ static void LCD_vSendPulse(LCD_configType *LCDx)
 
 /* ***************************************************************************** */
 
-void LCD_vSendString(LCD_configType *LCDx,uint8 *Copy_u8String)
+static void LCD_CHECK_BUSY_FLAG(LCD_configType *LCDx,uint8 Local_u8LCD_FlagIndex)
 {
-	while (*Copy_u8String != '\0')
-	{
-		LCD_xSendByte(LCDx,*Copy_u8String);
-		Copy_u8String++;
-	}
+	while(GET_BIT(LCDx->LCD_Map.LCD_CNTRL_PORT[Local_u8LCD_FlagIndex],LCDx->LCD_Map.LCD_CNTRL_PIN[Local_u8LCD_FlagIndex]) == GPIO_HIGH);
 }
-
-/* ***************************************************************************** */
-
-Error_Status LCD_xGotoPosition(LCD_configType *LCDx,uint8 Copy_u8Line_Position, uint8 Copy_u8Col_Position)
-{
-	if(LCD_IS_FIRST_LINE(Copy_u8Line_Position) == E_OK)
-	{
-		LCD_xSendComand(LCDx,(LCD_SET_DDRAM_ADDRESS | LCD_FIRST_LINE) + Copy_u8Col_Position);
-	}
-	else if(LCD_IS_SECOND_LINE(Copy_u8Line_Position) == E_OK)
-	{
-		LCD_xSendComand(LCDx,(LCD_SET_DDRAM_ADDRESS | LCD_SECOND_LINE) + Copy_u8Col_Position);
-	}
-	else
-	{
-		return E_NOK;
-	}
-
-	return E_OK;
-}
-/* ***************************************************************************** */
-void LCD_vSendInt(LCD_configType *LCDx,sint32 Copy_s32Num)
-{
-	uint8 Local_u8NumBufferp[LCD_N_COLS] = {0};
-	Util_String_vNumtoStr(Copy_s32Num,Local_u8NumBufferp);
-	LCD_vSendString(LCDx,Local_u8NumBufferp);
-}
-
-/* ***************************************************************************** */
-
-void LCD_vSendFloat(LCD_configType *LCDx,float32 Copy_f32Num, uint8 Copy_u8N_NumbersAfterFPonit)
-{
-	uint8 Local_u8NumBufferp[LCD_N_COLS] = {0};
-	Util_String_vFloatToStr(Copy_f32Num,Local_u8NumBufferp,Copy_u8N_NumbersAfterFPonit);
-	LCD_vSendString(LCDx,Local_u8NumBufferp);
-}
-/* ***************************************************************************** */
-void LCD_vClear(LCD_configType *LCDx)
-{
-	LCD_xSendComand(LCDx,LCD_CLR);
-}
-
-/* ***************************************************************************** */
-
-void LCD_vReturnHome(LCD_configType *LCDx)
-{
-	LCD_xSendComand(LCDx,LCD_CURSOR_HOME);
-}
-
-/* ***************************************************************************** */
-Error_Status LCD_vCustomChar(LCD_configType *LCDx,uint8 *Copy_pu8CharacteArr,CGRAM_CharPos_t Copy_xPosition)
-{
-	if(LCD_IS_VALID_CGRAM_POS(Copy_xPosition) == E_NOK)
-	{
-		return E_NOK;
-	}
-
-	uint8 Local_u8Index = 0;
-	LCD_xSendComand(LCDx,LCD_SET_CGRAM_ADDRESS +(Copy_xPosition * 8));
-
-	for(Local_u8Index = 0;Local_u8Index < LCD_CGRAM_PATTERN_BUFF_COUNT;Local_u8Index++)
-	{
-		LCD_xSendByte(LCDx,Copy_pu8CharacteArr[Local_u8Index]);
-	}
-
-	return E_OK;
-}
-

@@ -65,10 +65,6 @@
 #define LCD_IS_VALID_CGRAM_POS(Pos)					(Pos <= LCD_CGRAM_N_LOCATIONS)
 
 /* ***************************************************************************** */
-							/* LCD Busy flag checker */
-/* ***************************************************************************** */
-#define LCD_CHECK_BUSY_FLAG()			while(GET_BIT(LCD_DATA_PIN7,LCD_DATA_PIN7) == GPIO_HIGH);
-/* ***************************************************************************** */
 							/* LCD configurations macros */
 /* ***************************************************************************** */
 #define DISPLAYSET(State)               ((State == LCD_DisplayON)?LCD_DISPLAY_ON:LCD_DISPLAY_OFF					)
@@ -83,10 +79,16 @@
 /* ***************************************************************************** */
 						/* Local functions prototypes */
 /* ***************************************************************************** */
+							/* LCD Busy flag checker 		*/
+static void LCD_CHECK_BUSY_FLAG(LCD_configType *LCDx,uint8 Local_u8LCD_FlagIndex);
+/* ***************************************************************************** */
+							/* LCD send command function	 */
 static Error_Status LCD_xSendComand(LCD_configType *LCDx,uint8 Copy_u8Command);
 /* ***************************************************************************** */
+							/* LCD send pulse function 		*/
 static void LCD_vSendPulse(LCD_configType *LCDx);
 /* ***************************************************************************** */
+							/* LCD latch function		 	*/
 static Error_Status LCD_vLatch(LCD_configType *LCDx,uint8 Copy_u8Data,uint8 Copy_u8DataType,uint8 Copy_u8Mode);
 /* ***************************************************************************** */
 #endif /*LCD_PRIVATE_H_*/
