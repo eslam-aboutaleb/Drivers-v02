@@ -1,7 +1,7 @@
 /* *******************************************************	*/
 /*  keypad_interface.h									    */
-/*  Version: 2.0											*/
-/* 	Date: 30/10/2020										*/
+/*  Version: 3.0											*/
+/* 	Date: 2/11/2020											*/
 /*  Author : Eslam Ehab Aboutaleb							*/
 /* *******************************************************  */
 
@@ -32,20 +32,21 @@ void Keypad_vInit(void);
 
 /* ***************************************************************************** */
 /* Function		: 	Keypad_vInit
-* Return  		: 	Flag_Status			,	Type	:	User defined
- * Parameters	:	Copy_xPressingState	,	Type	:	User defined
- * Description	: 	- Function to scan if any key is pressed and store it in queue.
+* Return  		: 	Error_Status			,	Type	:	User defined
+ * Parameters	:	Copy_xPressingState		,	Type	:	User defined
+ * Description	: 	- Function to scan if any key is pressed and execute its callback function
  */
 /* ***************************************************************************** */
-Flag_Status Keypad_xScan(KeypadState_t Copy_xPressingState);
+Error_Status Keypad_xScan(KeypadState_t Copy_xPressingState);
 
 /* ***************************************************************************** */
-/* Function		: 	Keypad_xReadPressedBuf
- * Return  		: 	Flag_Status		,	Type	:	User defined
- * Parameters	:	u8Recv_Data			,	Type	:	uint8
+/* Function		: 	Keypad_xSetKeyFunc
+ * Return  		: 	Error_Status			,	Type	:	User defined
+ * Parameters	:	Copy_u8KeyNum			,	Type	:	uint8
+ * 					CallBackPtr				,	Type	:	Pointer to function
  * Description	: 	- Function to dequeue pressed keys and stores it.
  */
 /* ***************************************************************************** */
-Flag_Status Keypad_xReadPressedBuf(uint8* u8Recv_Data);
+Error_Status Keypad_xSetKeyFunc(uint8 Copy_u8KeyNum,void(*CallBackPtr)(void));
 
 #endif /* KEYPAD_INTERFACE_H_ */

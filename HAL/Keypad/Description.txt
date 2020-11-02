@@ -1,0 +1,14 @@
+Author	: Eslam Aboutaleb
+Date	: 2/11/2020
+Number	: 01002044529
+
+The driver has 3 different versions of it.
+- The first one uses while loop mechanism to avoid debouncing, And depends on 2D array
+	to get tha value from it and store it in circular queue for future use.
+
+- The second one uses finite state machines of the push buttons and take samples of it
+	each iteration and according to the current state of the push button that the
+	user acquires it store the value from 2D array in circular queue for future use.
+
+- The third one uses array of pointers to functions to avoid using 2D array as refrence
+	to pressed key and execute the button function directly.
